@@ -6,9 +6,10 @@ authors = ["Natalia Maximo <tal.afp.max@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-fastapi = "^0.115.6"
+python = "^3.13"
+fastapi = {extras = ["standard"], version = "^0.115.6"}
 pydantic = "^2.10.5"
+sqlmodel = "^0.0.22"
 
 
 [build-system]

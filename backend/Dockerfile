@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.13-slim
 
 WORKDIR /app
 
@@ -18,5 +18,5 @@ ADD . /app
 
 RUN poetry install
 
-CMD ["/bin/sh"]
+CMD ["poetry", "run", "fastapi", "run", "backend/app.py"]
 
