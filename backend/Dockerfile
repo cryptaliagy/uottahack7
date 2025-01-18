@@ -18,4 +18,8 @@ ADD . /app
 
 RUN poetry install
 
+CMD ["fastapi", "dev", "backend/app.py", "--host", "0.0.0.0", "--reload"]
+
+FROM dev AS runner
+
 CMD ["fastapi", "run", "backend/app.py"]

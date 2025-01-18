@@ -32,6 +32,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      target: dev
     container_name: "backend"
     labels:
       - "traefik.enable=true"
@@ -39,5 +40,7 @@ services:
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
       - "traefik.http.services.backend.loadbalancer.server.scheme=http"
       - "traefik.http.routers.backend.entrypoints=web"
+    volumes:
+      - ./backend:/app
     ports:
       - "8000:8000"
