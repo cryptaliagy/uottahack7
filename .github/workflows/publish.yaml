@@ -38,4 +38,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           context: ./backend
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-backend,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}-backend
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ env.VERSION }}
