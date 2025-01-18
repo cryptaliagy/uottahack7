@@ -137,3 +137,19 @@
   flex-direction: row;
   justify-content: space-between;
 }
+
+/* --- Search Input to match table aesthetics --- */
+.searchInput {
+  padding: 8px;
+  border: 1px solid #ccc; /* same border style as table cells */
+  border-radius: 4px;
+  background-color: #f2f2f2; /* matches the table header color */
+  color: #000; /* black text for readability */
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.searchInput:focus {
+  outline: none; /* remove default focus outline */
+  border-color: #0070f3; /* highlight border on focus */
+}
