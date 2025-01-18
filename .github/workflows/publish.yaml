@@ -3,6 +3,11 @@ name: publish
 on:
   workflow_dispatch:
 
+env:
+  VERSION: "0.1.${{ github.run_number }}"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
