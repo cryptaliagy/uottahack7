@@ -1,0 +1,22 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+RUN python -m pip install --upgrade pip && \
+    pip install pipx && \
+    pipx install poetry && \
+    pipx inject poetry poetry-plugin-export && \
+    /root/.local/bin/poetry --version && \
+    cp /root/.local/bin/poetry /usr/local/bin/poetry && \
+    poetry config virtualenvs.create false
+
+ADD README.md pyproject.toml poetry.lock /app/
+
+RUN poetry install --no-root
+
+ADD . /app
+
+RUN poetry install
+
+CMD ["/bin/sh"]
+
