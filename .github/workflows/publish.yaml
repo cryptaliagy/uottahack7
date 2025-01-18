@@ -39,3 +39,12 @@ jobs:
           push: true
           context: ./backend
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ env.VERSION }}
+      
+      - name: Build and push the backend container
+        uses: docker/build-push-action@v4
+        with:
+          file: ./frontend/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          context: ./frontend
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ env.VERSION }}
