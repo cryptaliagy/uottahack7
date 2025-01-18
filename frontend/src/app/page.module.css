@@ -68,10 +68,7 @@
   padding: 0 20px;
   border: none;
   border: 1px solid transparent;
-  transition:
-    background 0.2s,
-    color 0.2s,
-    border-color 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -165,4 +162,69 @@ a.secondary {
   .logo {
     filter: invert();
   }
+}
+
+/* --- File Upload Styles --- */
+.fileInput {
+  margin-bottom: 1rem;
+}
+
+.dropzone {
+  width: 300px;
+  height: 150px;
+  border: 2px dashed #aaa;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #444;
+  font-size: 1rem;
+  text-align: center;
+  padding: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.dropzone:hover {
+  background: #f9f9f9;
+}
+
+.dragActive {
+  border-color: #0070f3;
+  background: #e3f2fd;
+}
+
+.fileContent {
+  margin-top: 2rem;
+  width: 80%;
+  max-width: 600px;
+  background: #f0f0f0;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.fileContent pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
+}
+
+/* --- Loading Progress Bar --- */
+.loadingContainer {
+  width: 300px;
+  height: 20px;
+  background-color: #ccc;
+  margin: 0 auto;
+  margin-top: 10px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loadingBar {
+  height: 100%;
+  background-color: #4caf50;
+  width: 0%;
+  transition: width 0.2s ease-in-out;
+  border-radius: 4px 0 0 4px;
 }
