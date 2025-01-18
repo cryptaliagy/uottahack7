@@ -15,6 +15,7 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
   backend:
+    image: ghcr.io/cryptaliagy/uottahack7/backend:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
