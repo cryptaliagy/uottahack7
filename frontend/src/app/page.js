@@ -2,6 +2,44 @@
 import { useState } from "react";
 import styles from "./page.module.css";
 
+// Example column names
+const columns = [
+  "id",
+  "username",
+  "password",
+  "address",
+  "title",
+  "protocol",
+  "ip_address",
+  "port",
+  "url_path",
+  "domain",
+  "file_name",
+  "line_number",
+  "application",
+  "tags"
+];
+
+// Example placeholder row
+const placeholderData = [
+  {
+    id: 1,
+    username: "jdoe",
+    password: "abc123",
+    address: "123 Example St",
+    title: "My Title",
+    protocol: "https",
+    ip_address: "127.0.0.1",
+    port: 8080,
+    url_path: "/api/example",
+    domain: "example.com",
+    file_name: "notes.txt",
+    line_number: 42,
+    application: "MyApp",
+    tags: ["placeholder", "data"]
+  }
+];
+
 export default function Home() {
   const [fileContent, setFileContent] = useState("");
   const [fileName, setFileName] = useState("");
@@ -17,6 +55,7 @@ export default function Home() {
     setIsLoading(false);
   };
 
+  // Handle file selection
   const handleFileSelect = (event) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -24,6 +63,7 @@ export default function Home() {
     }
   };
 
+  // Handle drag events
   const handleDragOver = (event) => {
     event.preventDefault();
     setIsDragging(true);
@@ -34,6 +74,7 @@ export default function Home() {
     setIsDragging(false);
   };
 
+  // Handle dropped file
   const handleDrop = (event) => {
     event.preventDefault();
     setIsDragging(false);
@@ -52,14 +93,14 @@ export default function Home() {
     setProgress(0);
     setFileName(file.name);
 
-    // Read file (asynchronously), but don't show content until progress completes
+    // Read file asynchronously; content is stored but not displayed until done
     const reader = new FileReader();
     reader.onload = (e) => {
       setFileContent(e.target.result);
     };
     reader.readAsText(file);
 
-    // Simulate a 5-second progress, increment 1% every 50ms
+    // Simulate a 5-second progress (increment 1% every 50ms)
     let currentProgress = 0;
     const interval = setInterval(() => {
       currentProgress += 1;
@@ -76,15 +117,17 @@ export default function Home() {
     <div className={styles.page}>
       <main className={styles.main}>
         {/*
-          We have 3 distinct states:
-            1) Loading? => Show progress
-            2) Not loading but have file content? => Show "Data Parsed"
-            3) Otherwise => Show the upload UI
+          We have 3 states:
+            1) Loading -> Show the progress bar
+            2) File parsed -> Show "Data Parsed" + Back button + placeholder table
+            3) Otherwise -> Show the upload UI
         */}
         {isLoading ? (
           // --- LOADING STATE ---
-          <div style={{ textAlign: "center", marginTop: "1rem" }}>
-            <p>Parsing data of "{fileName}"</p>
+          <div>
+            <p className={styles.loadingText}>
+              Parsing data of "{fileName}"
+            </p>
             <div className={styles.loadingContainer}>
               <div
                 className={styles.loadingBar}
@@ -94,16 +137,50 @@ export default function Home() {
           </div>
         ) : fileContent ? (
           // --- PARSED STATE ---
-          <div style={{ textAlign: "center", marginTop: "1rem" }}>
-            <h2>Data Parsed</h2>
-            <button onClick={handleBack} style={{ marginBottom: "1rem" }}>
-              Back
-            </button>
+          <div className={styles.parsedSection}>
+            <div className={styles.topTableRow}>
+              <div className={styles.parsedTitle}>Data Parsed</div>
+              <button onClick={handleBack} className={styles.button}>
+                Back
+              </button>
+            </div>
+
+
+            {/* 
+              Render a placeholder table of data 
+              (we'll eventually replace placeholderData with real data 
+              from the fileContent or an API).
+            */}
+            <div className={styles.tableWrapper}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    {columns.map((col) => (
+                      <th key={col}>{col}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {placeholderData.map((row, i) => (
+                    <tr key={i}>
+                      {columns.map((col) => (
+                        <td key={col}>
+                          {/* Display the row value if present, otherwise fallback to "" */}
+                          {row[col] !== undefined ? String(row[col]) : ""}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : (
           // --- INITIAL / UPLOAD STATE ---
           <>
-            <h1>Upload a Text File</h1>
+            {/* Use a local style for your "Upload a Text File" heading */}
+            <h1 className={styles.uploadTitle}>Upload a Text File</h1>
+
             <input
               type="file"
               accept=".txt"
