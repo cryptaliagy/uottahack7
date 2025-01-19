@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import styles from "./page.module.css";
 
 // MUI Data Grid
@@ -23,28 +24,75 @@ const muiColumns = [
   { field: "tags", headerName: "Tags", width: 180 },
 ];
 
-const placeholderData = Array.from({ length: 100 }, (_, i) => ({
-  id: i + 1,
-  username: `user${i + 1}`,
-  password: `password${i + 1}`,
-  address: `${100 + i} Example St`,
-  title: i % 2 === 0 ? "Engineer" : "Analyst",
-  protocol: i % 3 === 0 ? "https" : "http",
-  ip_address: `192.168.${Math.floor(i / 10)}.${i % 255}`,
-  port: 8000 + (i % 100),
-  url_path: `/api/resource/${i + 1}`,
-  domain: `example${i % 10}.com`,
-  file_name: `file${i + 1}.txt`,
-  line_number: i + 1,
-  application: `App${i % 5 + 1}`,
-  tags: i % 2 === 0 ? ["tag1", "tag2"] : ["example", "test"],
-}));
-
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [fileContent, setFileContent] = useState(null);
+  const [rows, setRows] = useState([]);
+  const [filename, setFilename] = useState("");
+  const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
-  const filteredRows = placeholderData.filter((row) => {
+  const handleBack = () => {
+    setFileContent(null);
+    setRows([]);
+    setFilename("");
+    setOffset(0);
+    setHasMore(true);
+  };
+
+  const handleFileSelect = async (event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        // Upload the file
+        const uploadResponse = await axios.post("http://localhost/api/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        if (uploadResponse.status === 200) {
+          setFileContent(file.name);
+          setFilename(file.name);
+          fetchData(file.name, 0); // Fetch initial data
+        }
+      } catch (error) {
+        console.error("Error uploading or fetching data:", error);
+      }
+    }
+  };
+
+  const fetchData = async (filename, currentOffset) => {
+    if (!hasMore) return; // Stop if no more data to fetch
+    setLoading(true);
+
+    try {
+      const response = await axios.get(`http://localhost/api/search/${filename}`, {
+        params: { offset: currentOffset, limit: 100 },
+      });
+
+      if (response.status === 200) {
+        const fetchedRows = response.data; // Assume response.data is an array
+        setRows((prevRows) => [...prevRows, ...fetchedRows]); // Append new data
+        setOffset(currentOffset + 100); // Increment offset
+        if (fetchedRows.length < 100) setHasMore(false); // Stop if less than 100 rows
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadMoreData = () => {
+    if (hasMore) fetchData(filename, offset);
+  };
+
+  const filteredRows = rows.filter((row) => {
     const rowString = [
       row.id,
       row.username,
@@ -66,24 +114,13 @@ export default function Home() {
     return rowString.includes(searchTerm.toLowerCase());
   });
 
-  const handleBack = () => {
-    setFileContent(null);
-  };
-
-  const handleFileSelect = (event) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setFileContent("dummy file content"); // Simulating file parsing
-    }
-  };
-
   return (
     <div className={styles.page}>
       <main className={styles.main}>
         {fileContent ? (
           <>
             <div className={styles.topTableRow}>
-              <h2 className={styles.parsedTitle}>Parsed Data</h2>
+              <h2 className={styles.parsedTitle}>Parsed Data for {filename}</h2>
               <button onClick={handleBack} className={styles.button}>
                 Back
               </button>
@@ -127,6 +164,12 @@ export default function Home() {
                   },
                 }}
               />
+              {loading && <p>Loading more data...</p>}
+              {hasMore && (
+                <button onClick={loadMoreData} className={styles.loadMoreButton}>
+                  Load More
+                </button>
+              )}
             </div>
           </>
         ) : (
