@@ -81,8 +81,38 @@ async def clear_db():
     return {"status": "ok"}
 
 @app.get("/count/{file_name}")
-async def count(db: SessionDep, file_name: str): # type: ignore
+async def count(  # type: ignore
+    db: SessionDep,
+    file_name: str,
+    domain: str | None = None,
+    ip_address: str | None = None,
+    path: str | None = None,
+    tags: str | None = None,
+    port: int | None = None,
+    application: str | None = None,
+):
     query = select(func.count(Entry.id)).where(Entry.file_name == file_name)  # type: ignore
+
+    if domain is not None and domain != "":
+        query = query.where(Entry.address.like('%' + domain + '%')) # type: ignore
+    
+    if ip_address is not None and ip_address != "":
+        query = query.where(Entry.ip_address == ip_address)  # type: ignore
+
+    if path is not None and path != "":
+        query = query.where(Entry.url_path.like('%' + path + '%')) # type: ignore
+    
+    if tags is not None and tags != "":
+        tag_list = tags.split(",")
+        query = query.where(Entry.tags.contains(tag_list))  # type: ignore
+
+    if port is not None:
+        query = query.where(Entry.port == port)  # type: ignore
+    
+    if application is not None and application != "":
+        query = query.where(Entry.application == application)  # type: ignore
+
+
     count: int = db.exec(query).one()  # type: ignore
     return {"count": count}  # type: ignore
 
@@ -90,11 +120,36 @@ async def count(db: SessionDep, file_name: str): # type: ignore
 async def search(
     db: SessionDep,
     file_name: str,
-    offset: int,
+    offset: int = 0,
     limit: Annotated[int, Query(le=100, ge=1)] = 100,
+    domain: str | None = None,
+    ip_address: str | None = None,
+    path: str | None = None,
+    tags: str | None = None,
+    port: int | None = None,
+    application: str | None = None,
 ):
     query = select(Entry).where(Entry.file_name == file_name).offset(offset).limit(limit)
 
+    if domain is not None and domain != "":
+        query = query.where(Entry.address.like('%' + domain + '%')) # type: ignore
+    
+    if ip_address is not None and ip_address != "":
+        query = query.where(Entry.ip_address == ip_address)
+
+    if path is not None and path != "":
+        query = query.where(Entry.url_path.like('%' + path + '%')) # type: ignore
+    
+    if tags is not None and tags != "":
+        tag_list = tags.split(",")
+        query = query.where(Entry.tags.contains(tag_list))  # type: ignore
+
+    if port is not None:
+        query = query.where(Entry.port == port)
+    
+    if application is not None and application != "":
+        query = query.where(Entry.application == application)
+    
     entries = db.exec(query).all() # type: ignore
 
     return entries
@@ -158,16 +213,26 @@ async def convert_to_entries(domain: str, items: list[FileLine], client: httpx.A
             title = None
         else:
             title = response.text.split("<title>")[1].split("</title>")[0]
-        port = response.url.port
+        port = 80 if response.url.scheme == "http" else 443
         scheme = response.url.scheme
         path = response.url.path
-        tags = ["success"]
+        tags = ["resolved"]
+
+        if len(response.content) == 0:
+            tags.append("inactive")
+        else:
+            tags.append("active")
+        
+        if response.text.find("Parked"):
+            tags.append("parked")
+        if response.text.find("type=\"password\"") or response.text.find("type='password'"):
+            tags.append("login")
     else:
         title = None
         port = None
         scheme = None
         path = None
-        tags = ["failure"]
+        tags = ["unresolved"]
 
     for item in items:
         entry = Entry(
