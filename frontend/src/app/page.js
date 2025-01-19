@@ -23,16 +23,16 @@ const muiColumns = [
 
 export default function Home() {
   const [fileContent, setFileContent] = useState(null);
-  const [rows, setRows] = useState([]);
   const [filename, setFilename] = useState("sample.txt");
-  const [loading, setLoading] = useState(false);
+  const [rows, setRows] = useState([]);
   const [count, setCount] = useState(0);
 
-  // Optional: Fake loader states (if you still have the 7-second progress bar)
-  const [isLoading, setIsLoading] = useState(false);
+  // Loading states
+  const [loading, setLoading] = useState(false); // For server requests
+  const [isLoading, setIsLoading] = useState(false); // For the 7-second “fake” parse
   const [progress, setProgress] = useState(0);
 
-  // Multiple fields for query params
+  // Multi-field search states
   const [offset, setOffset] = useState("");
   const [limit, setLimit] = useState("100");
   const [domain, setDomain] = useState("");
@@ -42,13 +42,14 @@ export default function Home() {
   const [port, setPort] = useState("");
   const [application, setApplication] = useState("");
 
+  // Resets everything
   const handleBack = () => {
     setFileContent(null);
-    setRows([]);
     setFilename("");
+    setRows([]);
     setCount(0);
 
-    // Reset all search fields
+    // Reset search form fields
     setOffset("");
     setLimit("100");
     setDomain("");
@@ -59,7 +60,29 @@ export default function Home() {
     setApplication("");
   };
 
-  // -- Example: Upload file handler
+  /**
+   * Starts the 7-second loading bar animation,
+   * finishing at 100% after ~7s.
+   */
+  const startFakeLoadingBar = () => {
+    setIsLoading(true);
+    setProgress(0);
+
+    let current = 0;
+    const interval = setInterval(() => {
+      current += 1;
+      setProgress(current);
+      // Clear once we hit 100%
+      if (current >= 100) {
+        clearInterval(interval);
+        setIsLoading(false);
+      }
+    }, 70); // 70 ms * 100 = 7000 ms (7 seconds total)
+  };
+
+  /**
+   * Upload handler
+   */
   const handleFileSelect = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -68,37 +91,37 @@ export default function Home() {
     formData.append("file", file);
 
     try {
+      // Start the fake progress bar
+      startFakeLoadingBar();
+
+      // Meanwhile, do the actual upload
       const uploadResponse = await axios.post("/api/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       if (uploadResponse.status === 200) {
         setFileContent(file.name);
         setFilename(file.name);
-
-        // (Optionally start fake loading here)
-        // startFakeLoadingBar();
-
-        // Meanwhile, fetch initial data
-        fetchData(file.name);
+        fetchData(file.name); // fetch initial data
       }
     } catch (error) {
       console.error("Error uploading or fetching data:", error);
+      setIsLoading(false); // stop the fake loader if error
     }
   };
 
-  // -- Example: Data fetch with default limit=100
-  const fetchData = async (filename) => {
+  /**
+   * Fetch Data from your API (limit=100 by default)
+   */
+  const fetchData = async (file) => {
     setLoading(true);
     try {
-      const response = await axios.get(`/api/search/${filename}`, {
+      const response = await axios.get(`/api/search/${file}`, {
         params: { limit: 100 },
       });
       if (response.status === 200) {
         setRows(response.data);
-        // Get count without filters
+        // fetch count with no filters
         await fetchCount("", {});
       }
     } catch (error) {
@@ -108,16 +131,18 @@ export default function Home() {
     }
   };
 
-  // -- Example: Count fetch
+  /**
+   * Fetch Count to show total results
+   */
   const fetchCount = async (search, filters) => {
     try {
-      let domainUrl = `/api/count/${filename}`;
-      if (search !== "") {
-        domainUrl += `?${search}`;
+      let url = `/api/count/${filename}`;
+      if (search) {
+        url += `?${search}`;
       }
-      const response = await axios.get(domainUrl, { params: filters });
-      if (response.status === 200) {
-        setCount(response.data.count);
+      const resp = await axios.get(url, { params: filters });
+      if (resp.status === 200) {
+        setCount(resp.data.count);
       }
     } catch (error) {
       console.error("Error fetching count:", error);
@@ -125,35 +150,33 @@ export default function Home() {
   };
 
   /**
-   * Build a query string from all fields. If a field is non-empty, add it.
-   * Then pass it to /api/search/[filename].
+   * Build query from all fields, then do a GET to /api/search/[filename]
    */
   const searchData = async () => {
     setLoading(true);
-
-    const queryParams = [];
-    if (offset) queryParams.push(`offset=${encodeURIComponent(offset)}`);
-    if (limit) queryParams.push(`limit=${encodeURIComponent(limit)}`);
-    if (domain) queryParams.push(`domain=${encodeURIComponent(domain)}`);
-    if (ipAddress) queryParams.push(`ip_address=${encodeURIComponent(ipAddress)}`);
-    if (path) queryParams.push(`path=${encodeURIComponent(path)}`);
-    if (tags) queryParams.push(`tags=${encodeURIComponent(tags)}`);
-    if (port) queryParams.push(`port=${encodeURIComponent(port)}`);
-    if (application) queryParams.push(`application=${encodeURIComponent(application)}`);
-
-    const searchQuery = queryParams.join("&");
-
     try {
+      // Build query
+      const queryParams = [];
+      if (offset) queryParams.push(`offset=${encodeURIComponent(offset)}`);
+      if (limit) queryParams.push(`limit=${encodeURIComponent(limit)}`);
+      if (domain) queryParams.push(`domain=${encodeURIComponent(domain)}`);
+      if (ipAddress) queryParams.push(`ip_address=${encodeURIComponent(ipAddress)}`);
+      if (path) queryParams.push(`path=${encodeURIComponent(path)}`);
+      if (tags) queryParams.push(`tags=${encodeURIComponent(tags)}`);
+      if (port) queryParams.push(`port=${encodeURIComponent(port)}`);
+      if (application) queryParams.push(`application=${encodeURIComponent(application)}`);
+
+      const searchQuery = queryParams.join("&");
+
       let url = `/api/search/${filename}`;
       if (searchQuery) {
         url += `?${searchQuery}`;
       }
 
-      const params = {};
-      const response = await axios.get(url, { params });
+      const response = await axios.get(url);
       if (response.status === 200) {
         setRows(response.data);
-        await fetchCount(searchQuery, params);
+        await fetchCount(searchQuery, {});
       }
     } catch (error) {
       console.error("Error searching data:", error);
@@ -162,11 +185,17 @@ export default function Home() {
     }
   };
 
-  // Example: Simulate button
+  /**
+   * Simulate table with a default "sample.txt"
+   * Also triggers the 7-second fake loader
+   */
   const handleSimulateTable = () => {
     setFileContent("Simulated File");
     setFilename("sample.txt");
-    // Possibly start fake loading here too...
+
+    // Start the fake loading bar
+    startFakeLoadingBar();
+    // Then fetch data
     fetchData("sample.txt");
   };
 
@@ -174,7 +203,7 @@ export default function Home() {
     <div className={styles.page}>
       <div className={styles.background}></div>
       <main className={styles.main}>
-        {/* If you have a fake loader, show it while isLoading is true */}
+        {/* If the 7-second fake parse is happening, show progress bar */}
         {isLoading && fileContent ? (
           <div style={{ textAlign: "center" }}>
             <h2>{`Parsing "${filename}"...`}</h2>
@@ -186,21 +215,21 @@ export default function Home() {
             </div>
           </div>
         ) : fileContent ? (
-          /* Display table & advanced search form */
+          // Once file is set and fake loading done, show the search form + table
           <>
             <div className={styles.topTableRow}>
               <h2 className={styles.parsedTitle}>Parsed Data for {filename}</h2>
               <button onClick={handleBack} className={styles.button}>Back</button>
             </div>
 
-            {/* --- Multi-field search form --- */}
+            {/* Multi-field search form */}
             <div className={styles.searchForm}>
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Offset</label>
                   <input
-                    className={styles.searchInput}
                     type="number"
+                    className={styles.searchInput}
                     placeholder="0"
                     value={offset}
                     onChange={(e) => setOffset(e.target.value)}
@@ -209,8 +238,8 @@ export default function Home() {
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Limit</label>
                   <input
-                    className={styles.searchInput}
                     type="number"
+                    className={styles.searchInput}
                     placeholder="100"
                     value={limit}
                     onChange={(e) => setLimit(e.target.value)}
@@ -222,8 +251,8 @@ export default function Home() {
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Domain</label>
                   <input
-                    className={styles.searchInput}
                     type="text"
+                    className={styles.searchInput}
                     placeholder="google.com"
                     value={domain}
                     onChange={(e) => setDomain(e.target.value)}
@@ -232,8 +261,8 @@ export default function Home() {
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>IP Address</label>
                   <input
-                    className={styles.searchInput}
                     type="text"
+                    className={styles.searchInput}
                     placeholder="192.168.1.1"
                     value={ipAddress}
                     onChange={(e) => setIpAddress(e.target.value)}
@@ -245,8 +274,8 @@ export default function Home() {
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Path</label>
                   <input
-                    className={styles.searchInput}
                     type="text"
+                    className={styles.searchInput}
                     placeholder="signin"
                     value={path}
                     onChange={(e) => setPath(e.target.value)}
@@ -255,8 +284,8 @@ export default function Home() {
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Tags</label>
                   <input
-                    className={styles.searchInput}
                     type="text"
+                    className={styles.searchInput}
                     placeholder="resolved,active"
                     value={tags}
                     onChange={(e) => setTags(e.target.value)}
@@ -268,8 +297,8 @@ export default function Home() {
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Port</label>
                   <input
-                    className={styles.searchInput}
                     type="number"
+                    className={styles.searchInput}
                     placeholder="443"
                     value={port}
                     onChange={(e) => setPort(e.target.value)}
@@ -278,8 +307,8 @@ export default function Home() {
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>Application</label>
                   <input
-                    className={styles.searchInput}
                     type="text"
+                    className={styles.searchInput}
                     placeholder="chrome"
                     value={application}
                     onChange={(e) => setApplication(e.target.value)}
@@ -294,10 +323,10 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Display total results + DataGrid */}
             <div className={styles.topTableRow}>
               <p className={styles.countText}>Total Results: {count}</p>
             </div>
+
             <div className={styles.tableWrapper}>
               <DataGrid
                 rows={rows}
@@ -326,7 +355,7 @@ export default function Home() {
             </div>
           </>
         ) : (
-          /* If no file is selected, show your original upload screen */
+          // No file yet => show upload/simulate screen
           <div className={styles.dropzoneArea}>
             <h1 className={styles.title}>DEEP DATA PARSER</h1>
             <div className={styles.uploadCard}>
@@ -349,3 +378,4 @@ export default function Home() {
     </div>
   );
 }
+

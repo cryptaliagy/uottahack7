@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Breached Data Parser",
+  title: "Deep Data Parser",
   description: "App to parse large text file of breached data",
 };
 
