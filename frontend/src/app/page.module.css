@@ -1,168 +1,210 @@
 .page {
-  --gray-rgb: 0, 0, 0;
-  --gray-alpha-200: rgba(var(--gray-rgb), 0.08);
-  --gray-alpha-100: rgba(var(--gray-rgb), 0.05);
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-
-  display: grid;
-  grid-template-rows: 20px 1fr 20px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-items: center;
-  min-height: 100svh;
-  padding: 80px;
-  gap: 64px;
-  font-family: var(--font-geist-sans);
-}
-
-@media (prefers-color-scheme: dark) {
-  .page {
-    --gray-rgb: 255, 255, 255;
-    --gray-alpha-200: rgba(var(--gray-rgb), 0.145);
-    --gray-alpha-100: rgba(var(--gray-rgb), 0.06);
-
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-  }
+  justify-content: center;
+  min-height: 100vh; /* Full viewport height */
+  font-family: sans-serif;
+  background-color: #1b1b1e;
+  color: #fff;
+  overflow: hidden; /* Prevent scrolling of the page itself */
 }
 
 .main {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 32px;
   grid-row-start: 2;
+  height: 90%;
+  width: 90%; /* Consistent width for alignment */
+  max-width: 1000px; /* Ensure it doesn't stretch too wide */
 }
 
-.main ol {
-  font-family: var(--font-geist-mono);
-  padding-left: 0;
-  margin: 0;
-  font-size: 14px;
-  line-height: 24px;
-  letter-spacing: -0.01em;
-  list-style-position: inside;
-}
-
-.main li:not(:last-of-type) {
-  margin-bottom: 8px;
-}
-
-.main code {
-  font-family: inherit;
-  background: var(--gray-alpha-100);
-  padding: 2px 4px;
-  border-radius: 4px;
-  font-weight: 600;
-}
-
-.ctas {
-  display: flex;
-  gap: 16px;
-}
-
-.ctas a {
-  appearance: none;
-  border-radius: 128px;
-  height: 48px;
-  padding: 0 20px;
-  border: none;
-  border: 1px solid transparent;
-  transition:
-    background 0.2s,
-    color 0.2s,
-    border-color 0.2s;
-  cursor: pointer;
+/* --- File Upload Styles --- */
+.uploadCard {
+  background-color: #237db3;
+  padding: 3rem;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  line-height: 20px;
-  font-weight: 500;
+  flex-direction: column;
 }
-
-a.primary {
-  background: var(--foreground);
-  color: var(--background);
-  gap: 8px;
-}
-
-a.secondary {
-  border-color: var(--gray-alpha-200);
-  min-width: 180px;
-}
-
-.footer {
-  grid-row-start: 3;
+.fileInput {
+  margin-bottom: 1rem;
   display: flex;
-  gap: 24px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
 }
 
-.footer a {
+.dropzone {
+  width: 300px;
+  height: 150px;
+  border: 2px dashed #aaa;
+  border-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  color: #444;
+  font-size: 1rem;
+  text-align: center;
+  padding: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  background-color: #fff;
 }
 
-.footer img {
-  flex-shrink: 0;
+.dropzone:hover {
+  background: #f9f9f9;
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
-
-  .footer a:hover {
-    text-decoration: underline;
-    text-underline-offset: 4px;
-  }
+.dragActive {
+  border-color: #237db3;
+  background: #e3f2fd;
 }
 
-@media (max-width: 600px) {
-  .page {
-    padding: 32px;
-    padding-bottom: 80px;
-  }
-
-  .main {
-    align-items: center;
-  }
-
-  .main ol {
-    text-align: center;
-  }
-
-  .ctas {
-    flex-direction: column;
-  }
-
-  .ctas a {
-    font-size: 14px;
-    height: 40px;
-    padding: 0 16px;
-  }
-
-  a.secondary {
-    min-width: auto;
-  }
-
-  .footer {
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-  }
+/* --- Loading Progress Bar --- */
+.loadingContainer {
+  width: 300px;
+  height: 20px;
+  background-color: #ccc;
+  margin: 10px auto 0; /* top margin, auto left/right center */
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
-  }
+.loadingBar {
+  height: 100%;
+  background-color: #237db3;
+  width: 0%;
+  transition: width 0.2s ease-in-out;
+  border-radius: 4px 0 0 4px;
+}
+
+/* --- Data Table Styles --- */
+.tableWrapper {
+  width: 100%; /* Match the width of the container */
+  max-height: 80vh; /* Limit height for scrollability */
+  overflow-y: auto; /* Enable scrolling for table rows */
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.table {
+  width: 100%; /* Full width of the wrapper */
+  border-collapse: collapse;
+  background-color: #fff;
+}
+
+.table thead {
+  position: sticky; /* Keep the header fixed at the top of the table */
+  top: 0;
+  background-color: #f2f2f2;
+  z-index: 1;
+}
+
+.table th,
+.table td {
+  padding: 8px;
+  border: 1px solid #ccc;
+  text-align: left;
+  background-color: #fff;
+}
+
+/* --- Pure, Local Class Names for Headings, Text, and Button --- */
+.uploadTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  margin: 0.5rem 0;
+}
+
+.parsedTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0.5rem 0;
+}
+
+.loadingText {
+  font-size: 1rem;
+  text-align: center;
+  margin: 0.25rem 0;
+}
+
+.parsedSection {
+  text-align: center;
+  margin-top: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%; /* Match the container width */
+  max-width: 1000px; /* Consistent alignment */
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  border: 2px solid #237db3;
+  border-radius: 4px;
+  background-color: #237db3;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 1rem 0;
+}
+
+.button:hover {
+  color: #fff;
+}
+
+.topTableRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%; /* Align with the container width */
+  max-width: 1000px; /* Ensure it aligns with the table and heading */
+}
+.stickyRow {
+  position: sticky;
+  z-index: 3;
+  background-color: white;
+}
+.topRow {
+  top: 0;
+}
+.bottomRow {
+  bottom: 0;
+}
+.stickyFooter {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background-color: white;
+}
+
+/* --- Search Input to match table aesthetics --- */
+.searchInput {
+  padding: 8px;
+  border: 1px solid #ccc; /* same border style as table cells */
+  border-radius: 4px;
+  background-color: #f2f2f2; /* matches the table header color */
+  color: #000; /* black text for readability */
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+  width: 100%; /* Ensure the search bar spans the same width as the table */
+  max-width: 1000px;
+}
+
+.searchInput:focus {
+  outline: none; /* remove default focus outline */
+  border-color: #237db3; /* highlight border on focus */
 }
