@@ -13,15 +13,16 @@ const muiColumns = [
   { field: "username", headerName: "Username", width: 120 },
   { field: "password", headerName: "Password", width: 120 },
   { field: "address", headerName: "Address", width: 180 },
+  { field: "ip_address", headerName: "IP Address", width: 130 },
+  { field: "file_name", headerName: "File Name", width: 130 },
+  { field: "tags", headerName: "Tags", width: 180 },
   { field: "title", headerName: "Title", width: 120 },
   { field: "protocol", headerName: "Protocol", width: 120 },
-  { field: "ip_address", headerName: "IP Address", width: 130 },
   { field: "port", headerName: "Port", width: 80 },
   { field: "url_path", headerName: "URL Path", width: 130 },
   { field: "domain", headerName: "Domain", width: 130 },
-  { field: "file_name", headerName: "File Name", width: 130 },
   { field: "application", headerName: "Application", width: 130 },
-  { field: "tags", headerName: "Tags", width: 180 },
+
 ];
 
 export default function Home() {
@@ -137,6 +138,7 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
+      <div className={styles.background}></div>
       <main className={styles.main}>
         {fileContent ? (
           <>
@@ -189,17 +191,20 @@ export default function Home() {
             </div>
           </>
         ) : (
-          <div className={styles.uploadCard}>
-            <button onClick={handleSimulateTable} className={styles.button}>
-              Show Table (Simulate)
-            </button>
-            <input
-              type="file"
-              accept=".txt"
-              onChange={handleFileSelect}
-              className={styles.fileInput}
-            />
-            <div className={styles.dropzone}>Drop your file here or click to upload</div>
+          <div className={styles.dropzoneArea}>
+            <h1 className={styles.title}>DEEP DATA PARSER</h1>
+            <div className={styles.uploadCard}>
+              <button onClick={handleSimulateTable} className={styles.simulateButton}>
+                Upload a text file
+              </button>
+              <input
+                type="file"
+                accept=".txt"
+                onChange={handleFileSelect}
+                className={styles.fileInput}
+              />
+              <div className={styles.dropzone}>Drop your file here or click to upload</div>
+            </div>
           </div>
         )}
       </main>
