@@ -40,8 +40,10 @@ services:
     image: ghcr.io/cryptaliagy/uottahack7/backend:latest
     restart: unless-stopped
     depends_on:
-      - db
-      - traefik
+      traefik:
+        condition: service_started
+      db:
+        condition: service_healthy
     build:
       context: ./backend
       dockerfile: Dockerfile
