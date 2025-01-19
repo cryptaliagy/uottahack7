@@ -30,11 +30,13 @@ export default function Home() {
   const [filename, setFilename] = useState("sample.txt"); // Default filename for simulation
   const [loading, setLoading] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [count, setCount] = useState(0); // Count of matching queries
 
   const handleBack = () => {
     setFileContent(null);
     setRows([]);
     setFilename("");
+    setCount(0); // Reset count
   };
 
   const handleFileSelect = async (event) => {
@@ -72,11 +74,27 @@ export default function Home() {
 
       if (response.status === 200) {
         setRows(response.data); // Update rows with fetched data
+        await fetchCount({}); // Fetch count without filters
       }
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCount = async (filters) => {
+    try {
+      // Make an API call to get the count of queries
+      const response = await axios.get(`http://localhost/api/count/${filename}`, {
+        params: filters,
+      });
+
+      if (response.status === 200) {
+        setCount(response.data.count); // Update count
+      }
+    } catch (error) {
+      console.error("Error fetching count:", error);
     }
   };
 
@@ -101,6 +119,7 @@ export default function Home() {
 
       if (response.status === 200) {
         setRows(response.data); // Update rows with filtered data
+        await fetchCount(params); // Fetch count with filters
       } else {
         console.error("Unexpected response:", response);
       }
@@ -110,7 +129,6 @@ export default function Home() {
       setLoading(false);
     }
   };
-
 
   const handleSimulateTable = () => {
     setFileContent("Simulated File");
@@ -139,6 +157,9 @@ export default function Home() {
               <button onClick={searchData} className={styles.button}>
                 Search
               </button>
+            </div>
+            <div className={styles.topTableRow}>
+              <p className={styles.countText}>Total Results: {count}</p>
             </div>
             <div className={styles.tableWrapper}>
               <DataGrid
