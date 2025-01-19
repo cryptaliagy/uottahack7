@@ -20,107 +20,25 @@ const muiColumns = [
   { field: "file_name", headerName: "File Name", width: 130 },
   { field: "line_number", headerName: "Line #", width: 80 },
   { field: "application", headerName: "Application", width: 130 },
-  { field: "tags", headerName: "Tags", width: 180 }
+  { field: "tags", headerName: "Tags", width: 180 },
 ];
 
-const placeholderData = [
-  {
-    id: 1,
-    username: "jdoe",
-    password: "abc123",
-    address: "123 Example St",
-    title: "My Title",
-    protocol: "https",
-    ip_address: "127.0.0.1",
-    port: 8080,
-    url_path: "/api/example",
-    domain: "example.com",
-    file_name: "notes.txt",
-    line_number: 42,
-    application: "MyApp",
-    tags: ["placeholder", "data"]
-  },
-  {
-    id: 2,
-    username: "jsmith",
-    password: "pass123",
-    address: "456 Some Road",
-    title: "Engineer",
-    protocol: "http",
-    ip_address: "192.168.1.10",
-    port: 3000,
-    url_path: "/home",
-    domain: "somewhere.org",
-    file_name: "server.log",
-    line_number: 13,
-    application: "MyOtherApp",
-    tags: ["example", "test"]
-  },
-  {
-    id: 3,
-    username: "mjohnson",
-    password: "mdj999",
-    address: "789 Avenue Blvd",
-    title: "Manager",
-    protocol: "ftp",
-    ip_address: "10.0.0.2",
-    port: 21,
-    url_path: "/downloads",
-    domain: "ftp.example.net",
-    file_name: "data.txt",
-    line_number: 7,
-    application: "FileTransfer",
-    tags: ["sample", "ftp"]
-  },
-  {
-    id: 4,
-    username: "abrown",
-    password: "brownie",
-    address: "22 Oak Street",
-    title: "Developer",
-    protocol: "https",
-    ip_address: "192.168.50.5",
-    port: 5001,
-    url_path: "/api/v2",
-    domain: "dev.local",
-    file_name: "main.py",
-    line_number: 100,
-    application: "CodeRunner",
-    tags: ["dev", "backend"]
-  },
-  {
-    id: 5,
-    username: "cdavis",
-    password: "cpass45",
-    address: "99 Redwood Ln",
-    title: "QA",
-    protocol: "http",
-    ip_address: "172.16.0.101",
-    port: 8081,
-    url_path: "/test",
-    domain: "qa.local",
-    file_name: "test_results.csv",
-    line_number: 256,
-    application: "TestSuite",
-    tags: ["test", "automation"]
-  },
-  {
-    id: 6,
-    username: "swilson",
-    password: "sw123",
-    address: "400 Pine Rd",
-    title: "Analyst",
-    protocol: "https",
-    ip_address: "8.8.8.8",
-    port: 8080,
-    url_path: "/reports",
-    domain: "analytics.example",
-    file_name: "report.xlsx",
-    line_number: 12,
-    application: "AnalyticsApp",
-    tags: ["analysis", "data"]
-  }
-];
+const placeholderData = Array.from({ length: 100 }, (_, i) => ({
+  id: i + 1,
+  username: `user${i + 1}`,
+  password: `password${i + 1}`,
+  address: `${100 + i} Example St`,
+  title: i % 2 === 0 ? "Engineer" : "Analyst",
+  protocol: i % 3 === 0 ? "https" : "http",
+  ip_address: `192.168.${Math.floor(i / 10)}.${i % 255}`,
+  port: 8000 + (i % 100),
+  url_path: `/api/resource/${i + 1}`,
+  domain: `example${i % 10}.com`,
+  file_name: `file${i + 1}.txt`,
+  line_number: i + 1,
+  application: `App${i % 5 + 1}`,
+  tags: i % 2 === 0 ? ["tag1", "tag2"] : ["example", "test"],
+}));
 
 export default function Home() {
   const [fileContent, setFileContent] = useState("");
@@ -128,20 +46,16 @@ export default function Home() {
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-
-  // NEW: State for searchTerm
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Handler to reset everything
   const handleBack = () => {
     setFileContent("");
     setFileName("");
     setProgress(0);
     setIsLoading(false);
-    setSearchTerm(""); // clear search bar
+    setSearchTerm("");
   };
 
-  // File selection
   const handleFileSelect = (event) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -149,7 +63,6 @@ export default function Home() {
     }
   };
 
-  // Drag events
   const handleDragOver = (event) => {
     event.preventDefault();
     setIsDragging(true);
@@ -169,9 +82,6 @@ export default function Home() {
     }
   };
 
-  /**
-   * Simulate reading & 5-second "parsing" progress
-   */
   const startFileRead = (file) => {
     setIsLoading(true);
     setFileContent("");
@@ -184,7 +94,6 @@ export default function Home() {
     };
     reader.readAsText(file);
 
-    // Simulate 5 seconds progress
     let currentProgress = 0;
     const interval = setInterval(() => {
       currentProgress += 1;
@@ -197,10 +106,7 @@ export default function Home() {
     }, 50);
   };
 
-  // NEW: Filter rows by searchTerm (global match in any field)
   const filteredRows = placeholderData.filter((row) => {
-    // Convert everything to a single string
-    // We'll also handle arrays like `tags` by joining them
     const rowString = [
       row.id,
       row.username,
@@ -215,12 +121,10 @@ export default function Home() {
       row.file_name,
       row.line_number,
       row.application,
-      ...(Array.isArray(row.tags) ? row.tags : [])
+      ...(Array.isArray(row.tags) ? row.tags : []),
     ]
       .join(" ")
       .toLowerCase();
-
-    // Check if searchTerm is included
     return rowString.includes(searchTerm.toLowerCase());
   });
 
@@ -228,7 +132,6 @@ export default function Home() {
     <div className={styles.page}>
       <main className={styles.main}>
         {isLoading ? (
-          // --- LOADING STATE ---
           <div>
             <p className={styles.loadingText}>Parsing data of "{fileName}"</p>
             <div className={styles.loadingContainer}>
@@ -239,44 +142,44 @@ export default function Home() {
             </div>
           </div>
         ) : fileContent ? (
-          // --- PARSED STATE ---
-          <div className={styles.parsedSection}>
+          <>
             <div className={styles.topTableRow}>
-              <div className={styles.parsedTitle}>Data Parsed</div>
+              <h2 className={styles.parsedTitle}>Data Parsed</h2>
               <button onClick={handleBack} className={styles.button}>
                 Back
               </button>
             </div>
-
-            {/* 
-              1) Add an input to capture searchTerm
-              2) Filter rows before passing them to DataGrid
-            */}
-
             <input
               type="text"
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className={styles.searchInput} // apply the new class
+              className={styles.searchInput}
             />
-
-
-            {/* MUI Data Grid Section */}
-            <div style={{ width: "80vw", height: 400, margin: "1rem auto" }}>
+            <div className={styles.tableWrapper}>
               <DataGrid
-                rows={filteredRows}    // pass filteredRows instead of placeholderData
+                rows={filteredRows}
                 columns={muiColumns}
                 pageSize={5}
                 rowsPerPageOptions={[5, 10, 25]}
                 checkboxSelection={false}
+                sx={{
+                  "& .MuiDataGrid-root": {
+                    border: "none",
+                  },
+                  "& .MuiDataGrid-cell": {
+                    color: "#000",
+                    backgroundColor: "#fff",
+                  },
+                  "& .MuiDataGrid-columnHeaders": {
+                    backgroundColor: "#f2f2f2",
+                  },
+                }}
               />
             </div>
-          </div>
+          </>
         ) : (
-          // --- INITIAL / UPLOAD STATE ---
-          <>
-            <h1 className={styles.uploadTitle}>Upload a Text File</h1>
+          <div className={styles.uploadCard}>
             <input
               type="file"
               accept=".txt"
@@ -284,14 +187,15 @@ export default function Home() {
               className={styles.fileInput}
             />
             <div
-              className={`${styles.dropzone} ${isDragging ? styles.dragActive : ""}`}
+              className={`${styles.dropzone} ${isDragging ? styles.dragActive : ""
+                }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             >
               {isDragging ? "Drop it here!" : "Or drag and drop a file here"}
             </div>
-          </>
+          </div>
         )}
       </main>
     </div>

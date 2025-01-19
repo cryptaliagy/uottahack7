@@ -1,13 +1,12 @@
+/* Define your primary theme colors and font */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Black background, white text, bright green accent (DeepCode-like) */
+  --bg-color: #1b1b1e; /* main background: black */
+  --fg-color: #fff; /* main text: white */
+  --accent-color: #00ff90; /* bright green accent */
+  --bg-secondary: #111; /* slightly lighter than black for borders, etc. */
+  --border-radius: 6px;
+  --font-sans: sans-serif; /* or 'Inter', sans-serif, or whatever you prefer */
 }
 
 html,

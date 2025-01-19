@@ -1,26 +1,44 @@
 .page {
-  display: grid;
-  grid-template-rows: 20px 1fr 20px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-items: center;
-  min-height: 100vh;
-  padding: 80px;
-  gap: 64px;
+  justify-content: center;
+  min-height: 100vh; /* Full viewport height */
   font-family: sans-serif;
-  background-color: #fefefe;
-  color: #000;
+  background-color: #1b1b1e;
+  color: #fff;
+  overflow: hidden; /* Prevent scrolling of the page itself */
 }
 
 .main {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 32px;
   grid-row-start: 2;
+  height: 90%;
+  width: 90%; /* Consistent width for alignment */
+  max-width: 1000px; /* Ensure it doesn't stretch too wide */
 }
 
 /* --- File Upload Styles --- */
+.uploadCard {
+  background-color: #237db3;
+  padding: 3rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
 .fileInput {
   margin-bottom: 1rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
 }
 
 .dropzone {
@@ -37,6 +55,7 @@
   padding: 1rem;
   cursor: pointer;
   transition: background 0.3s ease;
+  background-color: #fff;
 }
 
 .dropzone:hover {
@@ -44,7 +63,7 @@
 }
 
 .dragActive {
-  border-color: #0070f3;
+  border-color: #237db3;
   background: #e3f2fd;
 }
 
@@ -61,26 +80,33 @@
 
 .loadingBar {
   height: 100%;
-  background-color: #4caf50;
+  background-color: #237db3;
   width: 0%;
   transition: width 0.2s ease-in-out;
   border-radius: 4px 0 0 4px;
 }
 
-/* --- Placeholder Table Styles --- */
+/* --- Data Table Styles --- */
 .tableWrapper {
-  margin-top: 1rem;
-  overflow-x: auto;
-}
-
-.table {
-  margin: 0 auto;
-  border-collapse: collapse;
+  width: 100%; /* Match the width of the container */
+  max-height: 80vh; /* Limit height for scrollability */
+  overflow-y: auto; /* Enable scrolling for table rows */
+  background-color: #fff;
+  border-radius: 8px;
   border: 1px solid #ccc;
 }
 
+.table {
+  width: 100%; /* Full width of the wrapper */
+  border-collapse: collapse;
+  background-color: #fff;
+}
+
 .table thead {
+  position: sticky; /* Keep the header fixed at the top of the table */
+  top: 0;
   background-color: #f2f2f2;
+  z-index: 1;
 }
 
 .table th,
@@ -88,6 +114,7 @@
   padding: 8px;
   border: 1px solid #ccc;
   text-align: left;
+  background-color: #fff;
 }
 
 /* --- Pure, Local Class Names for Headings, Text, and Button --- */
@@ -102,6 +129,9 @@
   font-size: 1.5rem;
   font-weight: 600;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin: 0.5rem 0;
 }
 
@@ -114,28 +144,34 @@
 .parsedSection {
   text-align: center;
   margin-top: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%; /* Match the container width */
+  max-width: 1000px; /* Consistent alignment */
 }
 
 .button {
   padding: 0.5rem 1rem;
-  border: 2px solid #0070f3;
+  border: 2px solid #237db3;
   border-radius: 4px;
-  background-color: transparent;
-  color: #0070f3;
+  background-color: #237db3;
+  color: #fff;
   cursor: pointer;
   transition: background-color 0.3s ease;
   margin: 1rem 0;
 }
 
 .button:hover {
-  background-color: #e0f1ff;
-  color: #0070f3;
+  color: #fff;
 }
 
 .topTableRow {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  width: 100%; /* Align with the container width */
+  max-width: 1000px; /* Ensure it aligns with the table and heading */
 }
 
 /* --- Search Input to match table aesthetics --- */
@@ -147,9 +183,11 @@
   color: #000; /* black text for readability */
   font-size: 1rem;
   transition: border-color 0.2s ease;
+  width: 100%; /* Ensure the search bar spans the same width as the table */
+  max-width: 1000px;
 }
 
 .searchInput:focus {
   outline: none; /* remove default focus outline */
-  border-color: #0070f3; /* highlight border on focus */
+  border-color: #237db3; /* highlight border on focus */
 }
