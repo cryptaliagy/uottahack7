@@ -8,7 +8,6 @@ import { DataGrid } from "@mui/x-data-grid";
 
 // MUI columns
 const muiColumns = [
-  // { field: "id", headerName: "ID", width: 70 },
   { field: "line_number", headerName: "Line #", width: 80 },
   { field: "username", headerName: "Username", width: 120 },
   { field: "password", headerName: "Password", width: 120 },
@@ -20,62 +19,87 @@ const muiColumns = [
   { field: "scheme", headerName: "Protocol", width: 120 },
   { field: "port", headerName: "Port", width: 80 },
   { field: "url_path", headerName: "URL Path", width: 130 },
-  // { field: "domain", headerName: "Domain", width: 130 },
   { field: "application", headerName: "Application", width: 130 },
-
 ];
 
 export default function Home() {
   const [fileContent, setFileContent] = useState(null);
   const [rows, setRows] = useState([]);
   const [filename, setFilename] = useState("sample.txt"); // Default filename for simulation
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // This is for axios calls, if needed
   const [searchKeyword, setSearchKeyword] = useState("");
   const [count, setCount] = useState(0); // Count of matching queries
+
+  // --- Added states for the fake loading bar ---
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const handleBack = () => {
     setFileContent(null);
     setRows([]);
     setFilename("");
-    setCount(0); // Reset count
+    setCount(0);
   };
 
   const handleFileSelect = async (event) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
+    if (!file) return;
 
-      try {
-        // Upload the file
-        const uploadResponse = await axios.post("/api/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+    const formData = new FormData();
+    formData.append("file", file);
 
-        if (uploadResponse.status === 200) {
-          setFileContent(file.name);
-          setFilename(file.name);
-          fetchData(file.name); // Fetch initial data
-        }
-      } catch (error) {
-        console.error("Error uploading or fetching data:", error);
+    try {
+      // 1. Upload the file
+      const uploadResponse = await axios.post("/api/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // 2. If successful, trigger the fake loading bar
+      if (uploadResponse.status === 200) {
+        setFileContent(file.name);
+        setFilename(file.name);
+
+        // START the 7-second fake loader
+        startFakeLoadingBar();
+
+        // Meanwhile, fetch the actual data
+        fetchData(file.name);
       }
+    } catch (error) {
+      console.error("Error uploading or fetching data:", error);
     }
+  };
+
+  // Simulate a 7-second loading bar
+  const startFakeLoadingBar = () => {
+    setIsLoading(true);
+    setProgress(0);
+
+    let current = 0;
+    const interval = setInterval(() => {
+      current += 1;
+      setProgress(current);
+
+      if (current >= 100) {
+        clearInterval(interval);
+        setIsLoading(false);
+      }
+    }, 70); // 70 ms × 100 = 7000 ms = 7 seconds
   };
 
   const fetchData = async (filename) => {
     setLoading(true);
-
     try {
       const response = await axios.get(`/api/search/${filename}`, {
         params: { limit: 100 },
       });
 
       if (response.status === 200) {
-        setRows(response.data); // Update rows with fetched data
-        await fetchCount("", {}); // Fetch count without filters
+        setRows(response.data);
+        // Fetch count with no filters
+        await fetchCount("", {});
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -86,19 +110,13 @@ export default function Home() {
 
   const fetchCount = async (search, filters) => {
     try {
-      // Make an API call to get the count of queries
       let domain = `/api/count/${filename}`;
-
       if (search !== "") {
         domain = `/api/count/${filename}?${search}`;
       }
-
-      const response = await axios.get(domain, {
-        params: filters,
-      });
-
+      const response = await axios.get(domain, { params: filters });
       if (response.status === 200) {
-        setCount(response.data.count); // Update count
+        setCount(response.data.count);
       }
     } catch (error) {
       console.error("Error fetching count:", error);
@@ -108,23 +126,15 @@ export default function Home() {
   const searchData = async () => {
     setLoading(true);
     try {
-      // Dynamically construct query parameters
-      const params = {
-        offset: 0,
-        limit: 100,
-      };
-
+      const params = { offset: 0, limit: 100 };
       let domain = `/api/search/${filename}`;
-
       if (searchKeyword !== "") {
         domain = `/api/search/${filename}?${searchKeyword}`;
       }
-
       const response = await axios.get(domain, { params });
-
       if (response.status === 200) {
-        setRows(response.data); // Update rows with filtered data
-        await fetchCount(searchKeyword, params); // Fetch count with filters
+        setRows(response.data);
+        await fetchCount(searchKeyword, params);
       } else {
         console.error("Unexpected response:", response);
       }
@@ -137,14 +147,32 @@ export default function Home() {
 
   const handleSimulateTable = () => {
     setFileContent("Simulated File");
-    fetchData(filename); // Simulate fetching data for the default file
+    setFilename("sample.txt");
+
+    // Start the 7-second fake loader
+    startFakeLoadingBar();
+
+    // Meanwhile, fetch data for the default file
+    fetchData("sample.txt");
   };
 
   return (
     <div className={styles.page}>
       <div className={styles.background}></div>
       <main className={styles.main}>
-        {fileContent ? (
+        {/* If we are currently in the parsing phase, show the progress bar */}
+        {isLoading && fileContent ? (
+          <div style={{ textAlign: "center" }}>
+            <h2>{`Parsing "${filename}"...`}</h2>
+            <div className={styles.loadingContainer}>
+              <div
+                className={styles.loadingBar}
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+          </div>
+        ) : fileContent ? (
+          // Show table + search UI only after the fake bar is done
           <>
             <div className={styles.topTableRow}>
               <h2 className={styles.parsedTitle}>Parsed Data for {filename}</h2>
@@ -175,8 +203,8 @@ export default function Home() {
                 rowsPerPageOptions={[10, 25, 50]}
                 checkboxSelection={false}
                 sx={{
-                  height: 600, // Grid height
-                  overflow: "hidden", // Prevent grid overflow
+                  height: 600,
+                  overflow: "hidden",
                   "& .MuiDataGrid-columnHeaders": {
                     position: "sticky",
                     top: 0,
@@ -195,6 +223,7 @@ export default function Home() {
             </div>
           </>
         ) : (
+          // If no file is selected or uploaded, show the upload form
           <div className={styles.dropzoneArea}>
             <h1 className={styles.title}>DEEP DATA PARSER</h1>
             <div className={styles.uploadCard}>
@@ -207,7 +236,9 @@ export default function Home() {
                 onChange={handleFileSelect}
                 className={styles.fileInput}
               />
-              <div className={styles.dropzone}>Drop your file here or click to upload</div>
+              <div className={styles.dropzone}>
+                Drop your file here or click to upload
+              </div>
             </div>
           </div>
         )}
