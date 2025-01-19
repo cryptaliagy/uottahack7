@@ -10,6 +10,7 @@
   color: #fff;
   overflow: hidden; /* Prevent scrolling of the page itself */
 }
+
 .background {
   position: absolute;
   top: 0;
@@ -22,12 +23,14 @@
   opacity: 0.2;
   z-index: -1;
 }
+
 .cardTitle {
   font-size: 25px;
   background-color: transparent;
   border: none;
   margin-bottom: 40px;
 }
+
 .main {
   z-index: 1;
   display: flex;
@@ -47,6 +50,7 @@
   flex-direction: column;
   align-items: center;
 }
+
 .uploadCard {
   background-color: #237db3;
   padding: 3rem;
@@ -58,6 +62,7 @@
   width: 400px;
   height: 400px;
 }
+
 .fileInput {
   margin-bottom: 1rem;
   display: flex;
@@ -66,6 +71,7 @@
   align-items: center;
   width: 300px;
 }
+
 #file-upload-button {
   background-color: transparent !important;
 }
@@ -151,12 +157,14 @@
   font-size: 5rem;
   padding-bottom: 60px;
 }
+
 .simulateButton {
   background-color: transparent !important;
   border: none;
   padding-bottom: 20px;
   font-size: 30px;
 }
+
 .uploadTitle {
   font-size: 1.5rem;
   font-weight: 600;
@@ -213,17 +221,21 @@
   max-width: 1000px; /* Ensure it aligns with the table and heading */
   align-items: center;
 }
+
 .stickyRow {
   position: sticky;
   z-index: 3;
   background-color: white;
 }
+
 .topRow {
   top: 0;
 }
+
 .bottomRow {
   bottom: 0;
 }
+
 .stickyFooter {
   position: sticky;
   bottom: 0;
@@ -249,4 +261,43 @@
 .searchInput:focus {
   outline: none; /* remove default focus outline */
   border-color: #237db3; /* highlight border on focus */
+}
+
+/* --- Additional styling for multi-field search form --- */
+.searchForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 1000px;
+  background-color: rgba(255, 255, 255, 0.05); /* Slight tinted background */
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem; /* space above form */
+}
+
+.formRow {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  flex: 1; /* allows even spacing if multiple fields in the row */
+}
+
+.formLabel {
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+  color: #fff; /* or #000 if you want darker text */
+}
+
+/* Optionally, to keep background images from interfering with text readability */
+.searchForm,
+.dropzoneArea,
+.uploadCard,
+.tableWrapper {
+  backdrop-filter: blur(3px);
 }
