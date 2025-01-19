@@ -173,6 +173,23 @@
   width: 100%; /* Align with the container width */
   max-width: 1000px; /* Ensure it aligns with the table and heading */
 }
+.stickyRow {
+  position: sticky;
+  z-index: 3;
+  background-color: white;
+}
+.topRow {
+  top: 0;
+}
+.bottomRow {
+  bottom: 0;
+}
+.stickyFooter {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background-color: white;
+}
 
 /* --- Search Input to match table aesthetics --- */
 .searchInput {

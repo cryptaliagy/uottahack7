@@ -41,70 +41,8 @@ const placeholderData = Array.from({ length: 100 }, (_, i) => ({
 }));
 
 export default function Home() {
-  const [fileContent, setFileContent] = useState("");
-  const [fileName, setFileName] = useState("");
-  const [isDragging, setIsDragging] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-
-  const handleBack = () => {
-    setFileContent("");
-    setFileName("");
-    setProgress(0);
-    setIsLoading(false);
-    setSearchTerm("");
-  };
-
-  const handleFileSelect = (event) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      startFileRead(file);
-    }
-  };
-
-  const handleDragOver = (event) => {
-    event.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (event) => {
-    event.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (event) => {
-    event.preventDefault();
-    setIsDragging(false);
-    if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
-      const file = event.dataTransfer.files[0];
-      startFileRead(file);
-    }
-  };
-
-  const startFileRead = (file) => {
-    setIsLoading(true);
-    setFileContent("");
-    setProgress(0);
-    setFileName(file.name);
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setFileContent(e.target.result);
-    };
-    reader.readAsText(file);
-
-    let currentProgress = 0;
-    const interval = setInterval(() => {
-      currentProgress += 1;
-      setProgress(currentProgress);
-
-      if (currentProgress >= 100) {
-        clearInterval(interval);
-        setIsLoading(false);
-      }
-    }, 50);
-  };
+  const [fileContent, setFileContent] = useState(null);
 
   const filteredRows = placeholderData.filter((row) => {
     const rowString = [
@@ -128,23 +66,24 @@ export default function Home() {
     return rowString.includes(searchTerm.toLowerCase());
   });
 
+  const handleBack = () => {
+    setFileContent(null);
+  };
+
+  const handleFileSelect = (event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setFileContent("dummy file content"); // Simulating file parsing
+    }
+  };
+
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        {isLoading ? (
-          <div>
-            <p className={styles.loadingText}>Parsing data of "{fileName}"</p>
-            <div className={styles.loadingContainer}>
-              <div
-                className={styles.loadingBar}
-                style={{ width: `${progress}%` }}
-              ></div>
-            </div>
-          </div>
-        ) : fileContent ? (
+        {fileContent ? (
           <>
             <div className={styles.topTableRow}>
-              <h2 className={styles.parsedTitle}>Data Parsed</h2>
+              <h2 className={styles.parsedTitle}>Parsed Data</h2>
               <button onClick={handleBack} className={styles.button}>
                 Back
               </button>
@@ -160,19 +99,31 @@ export default function Home() {
               <DataGrid
                 rows={filteredRows}
                 columns={muiColumns}
-                pageSize={5}
-                rowsPerPageOptions={[5, 10, 25]}
+                pageSize={10}
+                rowsPerPageOptions={[10, 25, 50]}
                 checkboxSelection={false}
                 sx={{
-                  "& .MuiDataGrid-root": {
-                    border: "none",
+                  height: 600, // Grid height
+                  overflow: "hidden", // Prevent grid overflow
+                  "& .MuiDataGrid-columnHeaders": {
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 3,
+                    backgroundColor: "#f2f2f2",
+                  },
+                  "& .MuiDataGrid-footerContainer": {
+                    position: "sticky",
+                    bottom: 0,
+                    zIndex: 2,
+                    backgroundColor: "#f2f2f2",
+                    marginTop: 0, // Remove any margin
+                    paddingTop: 0, // Remove any padding
+                  },
+                  "& .MuiDataGrid-virtualScroller": {
+                    marginBottom: 0, // Eliminate space between rows and footer
                   },
                   "& .MuiDataGrid-cell": {
-                    color: "#000",
-                    backgroundColor: "#fff",
-                  },
-                  "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: "#f2f2f2",
+                    borderBottom: "1px solid #e0e0e0",
                   },
                 }}
               />
@@ -186,15 +137,7 @@ export default function Home() {
               onChange={handleFileSelect}
               className={styles.fileInput}
             />
-            <div
-              className={`${styles.dropzone} ${isDragging ? styles.dragActive : ""
-                }`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-            >
-              {isDragging ? "Drop it here!" : "Or drag and drop a file here"}
-            </div>
+            <div className={styles.dropzone}>Drop your file here or click to upload</div>
           </div>
         )}
       </main>
