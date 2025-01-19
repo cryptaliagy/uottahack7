@@ -25,6 +25,6 @@ class Entry(SQLModel, table=True):
 class FileLine(BaseModel):
     file_name: str | None
     line_number: int
-    domain: str = None
+    domain: str
     username: str | None = None
     password: str | None = None

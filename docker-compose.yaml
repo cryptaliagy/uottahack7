@@ -1,5 +1,12 @@
 services:
-
+  db:
+    image: mysql:latest
+    healthcheck:
+        test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+        timeout: 20s
+        retries: 10
+    env_file:
+      - .env
   traefik:
     image: "traefik:v3.3"
     container_name: "traefik"
@@ -16,6 +23,8 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
   frontend:
     image: ghcr.io/cryptaliagy/uottahack7/frontend:latest
+    depends_on:
+      - traefik
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -29,11 +38,17 @@ services:
       - "traefik.http.routers.frontend.entrypoints=web"
   backend:
     image: ghcr.io/cryptaliagy/uottahack7/backend:latest
+    restart: unless-stopped
+    depends_on:
+      - db
+      - traefik
     build:
       context: ./backend
       dockerfile: Dockerfile
       target: dev
     container_name: "backend"
+    env_file:
+      - .env
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
