@@ -194,7 +194,7 @@ export default function Home() {
           <div className={styles.dropzoneArea}>
             <h1 className={styles.title}>DEEP DATA PARSER</h1>
             <div className={styles.uploadCard}>
-              <button onClick={handleSimulateTable} className={styles.simulateButton}>
+              <button onClick={handleSimulateTable} className={styles.cardTitle}>
                 Upload a text file
               </button>
               <input

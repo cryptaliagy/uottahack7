@@ -22,8 +22,11 @@
   opacity: 0.2;
   z-index: -1;
 }
-.cardInstructions {
-  font-size: 20px;
+.cardTitle {
+  font-size: 25px;
+  background-color: transparent;
+  border: none;
+  margin-bottom: 40px;
 }
 .main {
   z-index: 1;
@@ -208,6 +211,7 @@
   justify-content: space-between;
   width: 100%; /* Align with the container width */
   max-width: 1000px; /* Ensure it aligns with the table and heading */
+  align-items: center;
 }
 .stickyRow {
   position: sticky;
@@ -229,7 +233,7 @@
 
 /* --- Search Input to match table aesthetics --- */
 .searchInput {
-  padding: 8px;
+  padding: 0px 5px;
   border: 1px solid #ccc; /* same border style as table cells */
   border-radius: 4px;
   background-color: #f2f2f2; /* matches the table header color */
@@ -238,7 +242,8 @@
   transition: border-color 0.2s ease;
   width: 100%; /* Ensure the search bar spans the same width as the table */
   max-width: 1000px;
-  margin: 10px;
+  margin-right: 10px;
+  height: 35px;
 }
 
 .searchInput:focus {
