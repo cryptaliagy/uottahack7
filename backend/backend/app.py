@@ -10,6 +10,8 @@ import socket
 import asyncio
 import logging
 from urllib import parse
+import random
+import string
 
 from .models import Entry, FileLine
 from .settings import AppConfig
@@ -21,6 +23,9 @@ transport = httpx.AsyncHTTPTransport(retries=1)
 logger = logging.getLogger(__name__)
 
 logging.basicConfig(level=logging.WARN)
+
+def generate_random(length: int) -> str:
+    return "".join(random.choices(string.ascii_letters + string.digits, k=length))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[dict[str, dict[str, str]]]:
@@ -286,6 +291,11 @@ def convert_to_file_items(file_name: str | None, contents: str) -> dict[str, lis
         else:
             logger.error(f"Invalid line: {line}")
             username, password = "", ""
+
+        if username == "" or len(set(username)) == 1 and username[0] == "*":
+            username = generate_random(8)
+        if password == "" or len(set(password)) == 1 and password[0] == "*":
+            password = generate_random(16)
 
         address = f"{scheme}:{domain}"
 
