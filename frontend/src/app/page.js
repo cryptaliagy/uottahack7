@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import styles from "./page.module.css";
 
@@ -9,6 +9,7 @@ import { DataGrid } from "@mui/x-data-grid";
 // MUI columns
 const muiColumns = [
   { field: "id", headerName: "ID", width: 70 },
+  { field: "line_number", headerName: "Line #", width: 80 },
   { field: "username", headerName: "Username", width: 120 },
   { field: "password", headerName: "Password", width: 120 },
   { field: "address", headerName: "Address", width: 180 },
@@ -19,26 +20,21 @@ const muiColumns = [
   { field: "url_path", headerName: "URL Path", width: 130 },
   { field: "domain", headerName: "Domain", width: 130 },
   { field: "file_name", headerName: "File Name", width: 130 },
-  { field: "line_number", headerName: "Line #", width: 80 },
   { field: "application", headerName: "Application", width: 130 },
   { field: "tags", headerName: "Tags", width: 180 },
 ];
 
 export default function Home() {
-  const [searchTerm, setSearchTerm] = useState("");
   const [fileContent, setFileContent] = useState(null);
   const [rows, setRows] = useState([]);
-  const [filename, setFilename] = useState("");
-  const [offset, setOffset] = useState(0);
+  const [filename, setFilename] = useState("sample.txt"); // Default filename for simulation
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   const handleBack = () => {
     setFileContent(null);
     setRows([]);
     setFilename("");
-    setOffset(0);
-    setHasMore(true);
   };
 
   const handleFileSelect = async (event) => {
@@ -58,7 +54,7 @@ export default function Home() {
         if (uploadResponse.status === 200) {
           setFileContent(file.name);
           setFilename(file.name);
-          fetchData(file.name, 0); // Fetch initial data
+          fetchData(file.name); // Fetch initial data
         }
       } catch (error) {
         console.error("Error uploading or fetching data:", error);
@@ -66,20 +62,16 @@ export default function Home() {
     }
   };
 
-  const fetchData = async (filename, currentOffset) => {
-    if (!hasMore) return; // Stop if no more data to fetch
+  const fetchData = async (filename) => {
     setLoading(true);
 
     try {
       const response = await axios.get(`http://localhost/api/search/${filename}`, {
-        params: { offset: currentOffset, limit: 100 },
+        params: { limit: 100 },
       });
 
       if (response.status === 200) {
-        const fetchedRows = response.data; // Assume response.data is an array
-        setRows((prevRows) => [...prevRows, ...fetchedRows]); // Append new data
-        setOffset(currentOffset + 100); // Increment offset
-        if (fetchedRows.length < 100) setHasMore(false); // Stop if less than 100 rows
+        setRows(response.data); // Update rows with fetched data
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -88,31 +80,42 @@ export default function Home() {
     }
   };
 
-  const loadMoreData = () => {
-    if (hasMore) fetchData(filename, offset);
+  const searchData = async () => {
+    if (!searchKeyword.trim()) return; // Ensure input is valid
+
+    setLoading(true);
+    try {
+      // Dynamically construct query parameters
+      const params = {
+        offset: 0,
+        limit: 100,
+        domain: searchKeyword.trim(),
+        ip_address: searchKeyword.trim(),
+        path: searchKeyword.trim(),
+        tags: searchKeyword.trim(),
+        application: searchKeyword.trim(),
+        ...(Number(searchKeyword.trim()) && { port: Number(searchKeyword.trim()) }), // Only include port if numeric
+      };
+
+      const response = await axios.get(`http://localhost/api/search/${filename}`, { params });
+
+      if (response.status === 200) {
+        setRows(response.data); // Update rows with filtered data
+      } else {
+        console.error("Unexpected response:", response);
+      }
+    } catch (error) {
+      console.error("Error searching data:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredRows = rows.filter((row) => {
-    const rowString = [
-      row.id,
-      row.username,
-      row.password,
-      row.address,
-      row.title,
-      row.protocol,
-      row.ip_address,
-      row.port,
-      row.url_path,
-      row.domain,
-      row.file_name,
-      row.line_number,
-      row.application,
-      ...(Array.isArray(row.tags) ? row.tags : []),
-    ]
-      .join(" ")
-      .toLowerCase();
-    return rowString.includes(searchTerm.toLowerCase());
-  });
+
+  const handleSimulateTable = () => {
+    setFileContent("Simulated File");
+    fetchData(filename); // Simulate fetching data for the default file
+  };
 
   return (
     <div className={styles.page}>
@@ -125,16 +128,21 @@ export default function Home() {
                 Back
               </button>
             </div>
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={styles.searchInput}
-            />
+            <div className={styles.topTableRow}>
+              <input
+                type="text"
+                placeholder="Search across all fields..."
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                className={styles.searchInput}
+              />
+              <button onClick={searchData} className={styles.button}>
+                Search
+              </button>
+            </div>
             <div className={styles.tableWrapper}>
               <DataGrid
-                rows={filteredRows}
+                rows={rows}
                 columns={muiColumns}
                 pageSize={10}
                 rowsPerPageOptions={[10, 25, 50]}
@@ -153,27 +161,17 @@ export default function Home() {
                     bottom: 0,
                     zIndex: 2,
                     backgroundColor: "#f2f2f2",
-                    marginTop: 0, // Remove any margin
-                    paddingTop: 0, // Remove any padding
-                  },
-                  "& .MuiDataGrid-virtualScroller": {
-                    marginBottom: 0, // Eliminate space between rows and footer
-                  },
-                  "& .MuiDataGrid-cell": {
-                    borderBottom: "1px solid #e0e0e0",
                   },
                 }}
               />
-              {loading && <p>Loading more data...</p>}
-              {hasMore && (
-                <button onClick={loadMoreData} className={styles.loadMoreButton}>
-                  Load More
-                </button>
-              )}
+              {loading && <p>Loading...</p>}
             </div>
           </>
         ) : (
           <div className={styles.uploadCard}>
+            <button onClick={handleSimulateTable} className={styles.button}>
+              Show Table (Simulate)
+            </button>
             <input
               type="file"
               accept=".txt"
