@@ -8,19 +8,19 @@ import { DataGrid } from "@mui/x-data-grid";
 
 // MUI columns
 const muiColumns = [
-  { field: "id", headerName: "ID", width: 70 },
+  // { field: "id", headerName: "ID", width: 70 },
   { field: "line_number", headerName: "Line #", width: 80 },
   { field: "username", headerName: "Username", width: 120 },
   { field: "password", headerName: "Password", width: 120 },
-  { field: "address", headerName: "Address", width: 180 },
+  { field: "address", headerName: "Domain", width: 180 },
   { field: "ip_address", headerName: "IP Address", width: 130 },
   { field: "file_name", headerName: "File Name", width: 130 },
   { field: "tags", headerName: "Tags", width: 180 },
   { field: "title", headerName: "Title", width: 120 },
-  { field: "protocol", headerName: "Protocol", width: 120 },
+  { field: "scheme", headerName: "Protocol", width: 120 },
   { field: "port", headerName: "Port", width: 80 },
   { field: "url_path", headerName: "URL Path", width: 130 },
-  { field: "domain", headerName: "Domain", width: 130 },
+  // { field: "domain", headerName: "Domain", width: 130 },
   { field: "application", headerName: "Application", width: 130 },
 
 ];
@@ -48,7 +48,7 @@ export default function Home() {
 
       try {
         // Upload the file
-        const uploadResponse = await axios.post("http://localhost/api/upload", formData, {
+        const uploadResponse = await axios.post("/api/upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
@@ -69,13 +69,13 @@ export default function Home() {
     setLoading(true);
 
     try {
-      const response = await axios.get(`http://localhost/api/search/${filename}`, {
+      const response = await axios.get(`/api/search/${filename}`, {
         params: { limit: 100 },
       });
 
       if (response.status === 200) {
         setRows(response.data); // Update rows with fetched data
-        await fetchCount({}); // Fetch count without filters
+        await fetchCount("", {}); // Fetch count without filters
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -84,10 +84,16 @@ export default function Home() {
     }
   };
 
-  const fetchCount = async (filters) => {
+  const fetchCount = async (search, filters) => {
     try {
       // Make an API call to get the count of queries
-      const response = await axios.get(`http://localhost/api/count/${filename}`, {
+      let domain = `/api/count/${filename}`;
+
+      if (search !== "") {
+        domain = `/api/count/${filename}?${search}`;
+      }
+
+      const response = await axios.get(domain, {
         params: filters,
       });
 
@@ -100,27 +106,25 @@ export default function Home() {
   };
 
   const searchData = async () => {
-    if (!searchKeyword.trim()) return; // Ensure input is valid
-
     setLoading(true);
     try {
       // Dynamically construct query parameters
       const params = {
         offset: 0,
         limit: 100,
-        domain: searchKeyword.trim(),
-        ip_address: searchKeyword.trim(),
-        path: searchKeyword.trim(),
-        tags: searchKeyword.trim(),
-        application: searchKeyword.trim(),
-        ...(Number(searchKeyword.trim()) && { port: Number(searchKeyword.trim()) }), // Only include port if numeric
       };
 
-      const response = await axios.get(`http://localhost/api/search/${filename}`, { params });
+      let domain = `/api/search/${filename}`;
+
+      if (searchKeyword !== "") {
+        domain = `/api/search/${filename}?${searchKeyword}`;
+      }
+
+      const response = await axios.get(domain, { params });
 
       if (response.status === 200) {
         setRows(response.data); // Update rows with filtered data
-        await fetchCount(params); // Fetch count with filters
+        await fetchCount(searchKeyword, params); // Fetch count with filters
       } else {
         console.error("Unexpected response:", response);
       }

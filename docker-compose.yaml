@@ -30,7 +30,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      target: dev
+      target: ${TARGET:-dev}
     container_name: "frontend"
     labels:
       - "traefik.enable=true"
@@ -49,7 +49,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      target: dev
+      target: ${TARGET:-dev}
     container_name: "backend"
     env_file:
       - .env

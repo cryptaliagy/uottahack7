@@ -189,7 +189,8 @@ async def convert_to_entries(domain: str, items: list[FileLine], client: httpx.A
             entry = Entry(
                 username=item.username,
                 password=item.password,
-                address=item.domain,
+                address=url.hostname,  # type: ignore
+                url_path = url.path,
                 file_name=item.file_name if item.file_name else "",
                 line_number=item.line_number,
                 tags=tags,
@@ -228,11 +229,10 @@ async def convert_to_entries(domain: str, items: list[FileLine], client: httpx.A
         else:
             tags.append("active")
         
-        if response.text.find("Parked"):
-            tags.append("parked")
         if response.text.find("type=\"password\"") or response.text.find("type='password'"):
             tags.append("login")
     else:
+        logger.error(f"Failed to resolve {domain}: {response}")
         title = None
         port = None
         scheme = None
@@ -243,7 +243,7 @@ async def convert_to_entries(domain: str, items: list[FileLine], client: httpx.A
         entry = Entry(
             username=item.username,
             password=item.password,
-            address=item.domain,
+            address=url.hostname,  # type: ignore
             file_name=item.file_name if item.file_name else "",
             line_number=item.line_number,
             tags=tags,
